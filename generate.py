@@ -27,34 +27,43 @@ def test_model(mdl):
     return
 
 
-def generate_chord_progression(mdl, starting_chord, length, max_memory=4):
+def generate_chord_progression(mdl, starting_chord, length, max_memory=4, random_neighbors=False):
     progression = ChordProgression(Chord(starting_chord))
     current_chord = starting_chord
     memory = []
+    top_k = 10
     if max_memory > 0:
         memory = [current_chord]
 
     for i in range(0, length):
         next_chord = current_chord
         # print("current_chord: ", current_chord)
-        neighbors = mdl.get_nearest_neighbors(next_chord, 25)
+        neighbors = mdl.get_nearest_neighbors(next_chord, top_k)
         neighbor_chords = [n[1] for n in neighbors]
         # print("\tneighbors:", neighbor_chords)
         # choose random neighbor
-        for neighbor in neighbor_chords:
-            if neighbor != next_chord and neighbor not in memory:
-                next_chord = neighbor
-                memory.append(next_chord)
-                if len(memory) >= max_memory:
-                    memory.pop(0)  # remove first element
+        if random_neighbors:
+            processed_neighbors = np.random.choice(neighbor_chords, top_k)
+        else:
+            processed_neighbors = neighbor_chords
 
-        # random_neighbors = np.random.choice(neighbor_chords, 1)
-        # print("\trandom_neighbors: ", random_neighbors)
-        # next_chord = random_neighbors[0]
+        if len(processed_neighbors):
+            # choose sequential neighbors
+            for neighbor in processed_neighbors:
+                if neighbor != next_chord and neighbor not in memory:
+                    next_chord = neighbor
+                    memory.append(next_chord)
+                    if len(memory) >= max_memory:
+                        memory.pop(0)  # remove first element
 
-        current_chord = next_chord
-        chrd = Chord(current_chord)
-        progression.append(chrd)
+            # random_neighbors = np.random.choice(neighbor_chords, 1)
+            # print("\trandom_neighbors: ", random_neighbors)
+            # next_chord = random_neighbors[0]
+
+            current_chord = next_chord
+            if current_chord:
+                chrd = Chord(current_chord)
+                progression.append(chrd)
     return progression
 
 
@@ -69,8 +78,9 @@ def rand_octave_shift(max_num=1.0):
     return int((np.random.rand() * max_num))
 
 
-def get_next_chord(mdl, chrd, memory_size=0):
-    prg = generate_chord_progression(mdl, chrd, 1, max_memory=memory_size)
+def get_next_chord(mdl, chrd, memory_size=0, random_neighbors=False):
+    prg = generate_chord_progression(
+        mdl, chrd, 1, max_memory=memory_size, random_neighbors=random_neighbors)
     return prg.chords[-1]
 
 

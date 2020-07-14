@@ -28,7 +28,7 @@ def main():
     input_names = mido.get_input_names()
     print(input_names)
 
-    mid = mido.MidiFile('test.mid')
+    # mid = mido.MidiFile('test.mid')
 
     DEVICE_NAME = 'CASIO USB-MIDI'
 
@@ -65,7 +65,7 @@ def main():
             current_ai_notes = set()
         elif current_human_played_note and current_human_played_note != last_human_played_note:
             chrd_notes = [current_human_played_note]
-            human_octave = int(current_human_played_note / 12)
+            human_octave = int(max(current_human_played_notes) / 12)
             if len(current_human_played_notes) == 1:
                 # chrd = Chord(chrd_notes[0])
                 chrd_str = INT_TO_NOTE[chrd_notes[0] % 12]
@@ -75,18 +75,24 @@ def main():
                 human_notes_names = [INT_TO_NOTE[n % 12] for n in human_notes]
                 chrd = note_to_chord(human_notes_names)
                 if not chrd:
-                    continue
-                chrd_str = str(chrd[0])
-            # print(chrd_str)
-            next_chord = get_next_chord(mdl, chrd_str)
-            print("notes: {}, chord_suggestion: {}".format(
-                human_notes_names, next_chord))
-            next_chord_notes = generate_notes_from_chord(
-                next_chord, human_octave)
-            # if len(current_ai_notes) == 0:
-            start_all_ai_notes(port, next_chord_notes, current_human_vel)
-            for note in next_chord_notes:
-                current_ai_notes.add(note)
+                    chrd_str = ''
+                else:
+                    chrd_str = str(chrd[0])
+            if not chrd_str:
+                continue
+            try:
+                next_chord = get_next_chord(
+                    mdl, chrd_str, random_neighbors=True)
+                print("notes: {}, chord_suggestion: {}".format(
+                    human_notes_names, next_chord))
+                next_chord_notes = generate_notes_from_chord(
+                    next_chord, human_octave)
+                # if len(current_ai_notes) == 0:
+                start_all_ai_notes(port, next_chord_notes, current_human_vel)
+                for note in next_chord_notes:
+                    current_ai_notes.add(note)
+            except:
+                print("unparsable chrd_str: '{}'".format(chrd_str))
 
         # if not current_human_played_notes:
         #     stop_all_ai_notes(port, list(current_ai_notes))
