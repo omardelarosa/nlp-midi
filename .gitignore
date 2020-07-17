@@ -2,3 +2,5 @@ __pycache__/
 logic/
 outputs/
 media/
+.DS_Store
+scratch/

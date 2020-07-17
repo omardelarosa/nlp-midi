@@ -7,9 +7,15 @@ import matplotlib.pyplot as plt
 
 from pychord import Chord, note_to_chord, ChordProgression
 from proll import NOTE_TO_INT
+from hypercube import (
+    chord_to_binary,
+    bin_to_note_ints,
+    get_hypercube_neighbor_path,
+    get_random_outward_path
+)
 
-# MODEL_OUT_PATH = '../datasets/jazz_progressions.mdl.fasttext'
-MODEL_OUT_PATH = '../datasets/maestro_progressions.mdl.fasttext'
+MODEL_OUT_PATH = './models/jazz_progressions-12d.mdl.fasttext'
+# MODEL_OUT_PATH = './models/maestro_progressions-12d.mdl.fasttext'
 
 
 def load_mdl(m_path):
@@ -78,10 +84,29 @@ def rand_octave_shift(max_num=1.0):
     return int((np.random.rand() * max_num))
 
 
-def get_next_chord(mdl, chrd, memory_size=0, random_neighbors=False):
-    prg = generate_chord_progression(
-        mdl, chrd, 1, max_memory=memory_size, random_neighbors=random_neighbors)
+def get_next_chord(mdl, chrd, memory_size=0, random_neighbors=False, hypercube=False):
+    if not hypercube:
+        prg = generate_chord_progression(
+            mdl, chrd, 1, max_memory=memory_size, random_neighbors=random_neighbors)
+    else:
+        bin_note_ints = chord_to_binary(chrd)
+        note_ints = bin_to_note_ints(bin_note_ints)
+        path = get_hypercube_neighbor_path(note_ints)
+        if len(path):
+            return path[0]
+        else:
+            return None
     return prg.chords[-1]
+
+
+def generate_hypercube_progression(chrd):
+    bin_note_ints = chord_to_binary(chrd)
+    note_ints = bin_to_note_ints(bin_note_ints)
+    path = get_hypercube_neighbor_path(note_ints)
+    if len(path):
+        return ChordProgression(path)
+    else:
+        return ChordProgression([])
 
 
 def generate_pianoroll_from_progression(prog, num_chords, duration):
@@ -122,12 +147,13 @@ def write_to_mid(track, out_file, downbeat=[0, 96, 192, 288]):
     multitrack.write(out_file)
 
 
-def main():
-    mdl = load_mdl(MODEL_OUT_PATH)
+def main(model_path=MODEL_OUT_PATH):
+    mdl = load_mdl(model_path)
     # test_model(mdl)
     chrd = choose_random_chord(mdl)
     print("starting chord: ", chrd)
-    prog = generate_chord_progression(mdl, chrd, 20)
+    # prog = generate_chord_progression(mdl, chrd, 20)
+    prog = generate_hypercube_progression(chrd)
     track = generate_pianoroll_from_progression(prog, 20, 48)
     # plot_track(track)
     write_to_mid(track, 'test.mid', downbeat=[0, 48, 96, 144])

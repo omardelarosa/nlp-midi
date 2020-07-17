@@ -1,11 +1,41 @@
 import argparse
 
-# TODO:
+from midi_server import serve, print_midi_ports
+from train import train
 
-# parser = argparse.ArgumentParser(description='Chord progression embeddings')
-# parser.add_argument('--buildCorpus',
-#                     type=str,
-#                     help='sum the integers (default: find the max)')
 
-# args = parser.parse_args()
-# print(args.accumulate(args.integers))
+SUPPORTED_MODES = [
+    'printPorts',
+    'midi',
+    'train'
+]
+
+
+parser = argparse.ArgumentParser(
+    description='NLP tools for MIDI')
+
+parser.add_argument('--mode', type=str,
+                    help='supported modes: {}'.format(SUPPORTED_MODES))
+
+parser.add_argument('--corpusPath', type=str, help='path to training corpus')
+parser.add_argument('--modelIn',
+                    type=str,
+                    help='language embedding model used for input')
+parser.add_argument('--inPort',
+                    type=str,
+                    help='midi input port name')
+parser.add_argument('--outPort',
+                    type=str,
+                    help='midi output port name')
+
+args = parser.parse_args()
+
+
+if args.mode == 'printPorts':
+    print_midi_ports()
+elif args.mode == 'midi':
+    serve(args.modelIn, args.inPort, args.outPort)
+elif args.mode == 'train':
+    train(args.modelIn, args.modelOut)
+else:
+    print("please specify one of the supported modes: {}".format(SUPPORTED_MODES))
