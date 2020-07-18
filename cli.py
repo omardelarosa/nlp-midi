@@ -18,6 +18,10 @@ parser.add_argument('--mode', type=str,
                     help='supported modes: {}'.format(SUPPORTED_MODES))
 
 parser.add_argument('--corpusPath', type=str, help='path to training corpus')
+parser.add_argument('--octaveOffset', type=int,
+                    help='offset output notes by +n octaves')
+parser.add_argument('--spread', type=float,
+                    help='randomly spread out the notes across octaves')
 parser.add_argument('--modelIn',
                     type=str,
                     help='language embedding model used for input')
@@ -34,7 +38,8 @@ args = parser.parse_args()
 if args.mode == 'printPorts':
     print_midi_ports()
 elif args.mode == 'midi':
-    serve(args.modelIn, args.inPort, args.outPort)
+    serve(args.modelIn, args.inPort, args.outPort,
+          args.octaveOffset, args.spread)
 elif args.mode == 'train':
     train(args.modelIn, args.modelOut)
 else:

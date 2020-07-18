@@ -14,10 +14,10 @@ from proll import INT_TO_NOTE, NOTE_TO_INT
 
 # outport.send(msg)
 
-def generate_notes_from_chord(chord, octave):
-    spread = 0.0
-    OCTAVE = octave
-    notes = [(OCTAVE + rand_octave_shift(spread)) * 12 + NOTE_TO_INT[c]
+def generate_notes_from_chord(chord, octave, spread=0.0, octave_offset=0):
+    _spread = spread
+    OCTAVE = octave - octave_offset
+    notes = [(OCTAVE + rand_octave_shift(_spread)) * 12 + NOTE_TO_INT[c]
              for c in chord.components()]
     return notes
 
@@ -29,7 +29,7 @@ def print_midi_ports():
     print("available outputs: ", output_names)
 
 
-def serve(model_path=MODEL_OUT_PATH, in_port_name=None, out_port_name=None):
+def serve(model_path=MODEL_OUT_PATH, in_port_name=None, out_port_name=None, octave_offset=0, spread=0.0):
     if not model_path:
         print("FastText model is required!")
     if not in_port_name:
@@ -39,6 +39,10 @@ def serve(model_path=MODEL_OUT_PATH, in_port_name=None, out_port_name=None):
 
     mdl = load_mdl(model_path)
 
+    SPREAD = spread
+    OCTAVE_OFFSET = octave_offset
+    print("spread:", SPREAD)
+    print("octaveOffset: ", OCTAVE_OFFSET)
     INPUT_DEVICE_NAME = in_port_name
 
     OUTPUT_DEVICE_NAME = out_port_name
@@ -54,6 +58,7 @@ def serve(model_path=MODEL_OUT_PATH, in_port_name=None, out_port_name=None):
     current_human_vel = 0
     last_human_played_note = None
 
+    stop_all_notes(port)
     while True:
         r_msg = inport.receive()
         if r_msg.type in ['note_on', 'note_off']:
@@ -101,7 +106,7 @@ def serve(model_path=MODEL_OUT_PATH, in_port_name=None, out_port_name=None):
                 print("notes: {}, chord_suggestion: {}".format(
                     human_notes_names, next_chord))
                 next_chord_notes = generate_notes_from_chord(
-                    next_chord, human_octave)
+                    next_chord, human_octave, octave_offset=OCTAVE_OFFSET, spread=SPREAD)
                 # stop any pending AI notes
                 stop_all_notes(port)
                 current_ai_notes = set()
