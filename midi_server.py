@@ -1,3 +1,4 @@
+import time
 from mido import Message
 import mido
 from pychord import Chord, note_to_chord
@@ -60,6 +61,8 @@ def serve(model_path=MODEL_OUT_PATH, in_port_name=None, out_port_name=None, octa
 
     stop_all_notes(port)
     while True:
+        # fake throttling
+        time.sleep(0.01)
         r_msg = inport.receive()
         if r_msg.type in ['note_on', 'note_off']:
             note_num = INT_TO_NOTE[r_msg.note % 12]
@@ -154,6 +157,7 @@ def start_all_ai_notes(port, notes, human_vel):
 #     port.send(msg)
 # while True:
 
+print_midi_ports()
 
 if __name__ == '__main__':
     main()

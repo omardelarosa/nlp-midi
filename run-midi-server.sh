@@ -3,7 +3,7 @@
 python cli.py \
     --mode midi \
     --modelIn models/maestro_progressions-12d.mdl.fasttext \
-    --inPort 'VMini Out' \
+    --inPort 'VI49 Out' \
     --octaveOffset 0 \
     --spread 1.0 \
-    --outPort 'IAC Driver IAC - Bus 1'
+    --outPort 'M6'
