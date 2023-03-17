@@ -6,12 +6,8 @@ NLP tools for generative MIDI music.
 
 ## Installation
 
-Install `tonegraph` dependency as pip package
-
 ```
-git clone https://github.com/omardelarosa/tonegraph.git
-cd tonegraph
-pip install -e .
+pip install -r requirements.txt
 ```
 
 ## CLI

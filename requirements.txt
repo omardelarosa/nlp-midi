@@ -1,0 +1,6 @@
+mido==1.2.10
+pychord==0.3.2
+fasttext==0.9.2
+pypianoroll==1.0.4
+python-rtmidi==1.4.9
+git+https://github.com/omardelarosa/tonegraph.git@master#egg=tonegraph
